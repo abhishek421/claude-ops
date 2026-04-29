@@ -54,6 +54,7 @@ const hookEntry = (event) => ({
 });
 
 try {
+  fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
   const raw = fs.existsSync(settingsPath) ? fs.readFileSync(settingsPath, 'utf8') : '{}';
   const settings = JSON.parse(raw);
   settings.hooks = settings.hooks || {};

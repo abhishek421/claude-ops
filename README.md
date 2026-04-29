@@ -27,20 +27,54 @@ See what every running Claude agent is doing, get OS push notifications when one
 
 ---
 
-## Quick Start
+## Setup
+
+### 1. Install prerequisites (if not already installed)
+
+```bash
+# Node.js 20+  —  https://nodejs.org
+node --version
+
+# Claude Code
+npm install -g @anthropic-ai/claude-code
+```
+
+### 2. Clone and install
 
 ```bash
 git clone https://github.com/abhishek421/claude-hq.git
 cd claude-hq
 npm install
-npm run setup   # generates VAPID keys, writes .env, patches ~/.claude/settings.json
-npm start       # http://localhost:4242
 ```
 
-`npm run setup` does three things:
-1. Generates Web Push (VAPID) keys and writes them to `.env`
-2. Sets `BASE_DIR` to your home directory in `.env`
-3. Patches `~/.claude/settings.json` to add all HQ hooks pointing to your local clone
+### 3. Run setup
+
+```bash
+npm run setup
+```
+
+This does three things automatically:
+- Generates Web Push (VAPID) keys and writes them to `.env`
+- Sets `BASE_DIR` to your home directory in `.env`
+- Patches `~/.claude/settings.json` to add all HQ hooks pointing to your local clone
+
+### 4. Start the dashboard
+
+```bash
+npm start
+```
+
+Open **http://localhost:4242** in your browser.
+
+### 5. Enable push notifications (optional)
+
+Click **🔕 Enable alerts** in the top-right corner and allow notifications. You'll get an OS notification whenever a session needs your input, even with the tab in the background.
+
+### 6. Start a Claude Code session
+
+Open a new terminal, `cd` into any project, and run `claude`. The session will appear in the dashboard immediately.
+
+> **Note:** any Claude Code sessions that were already open before `npm run setup` won't have the new hooks active. Start a fresh session after setup for full hook coverage. Existing sessions still appear via process discovery but show as `Idle` only.
 
 ---
 
