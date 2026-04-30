@@ -115,13 +115,24 @@
     .tree-children.open { display: block; }
     .tree-launch {
       flex-shrink: 0; opacity: 0; margin-left: auto;
-      font-size: 9px; padding: 1px 6px; border-radius: 3px;
-      color: rgba(167,139,250,0.6); background: rgba(139,92,246,0.08);
-      border: 1px solid rgba(139,92,246,0.18);
-      transition: opacity 0.12s, background 0.12s; white-space: nowrap;
+      width: 18px; height: 18px; border-radius: 5px;
+      color: rgba(255,255,255,0.2); background: transparent;
+      border: 1px solid rgba(255,255,255,0.12); cursor: pointer;
+      font-size: 14px; font-weight: 300; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.12s, color 0.15s, background 0.15s, border-color 0.15s;
     }
     .tree-item.dir:hover .tree-launch { opacity: 1; }
-    .tree-launch:hover { background: rgba(139,92,246,0.18); color: #c4b5fd; }
+    .tree-launch:hover { color: #c4b5fd; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
+
+    /* ── Tree controls ───────────────────────── */
+    .tree-ctrl-btn {
+      width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0;
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
+      font-size: 11px; transition: background 0.12s, color 0.12s;
+    }
+    .tree-ctrl-btn:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); }
 
     /* ── Settings panel ──────────────────────── */
     .setting-section {
@@ -319,7 +330,11 @@
 
     <!-- Files panel -->
     <div class="panel active" id="panel-files">
-      <div class="panel-header" id="files-header">Files — ~/</div>
+      <div class="panel-header" style="display:flex;align-items:center;gap:4px">
+        <span id="files-header" style="flex:1;min-width:0">Files — ~/</span>
+        <button class="tree-ctrl-btn" id="tree-expand-all" title="Expand all">↓≡</button>
+        <button class="tree-ctrl-btn" id="tree-collapse-all" title="Collapse all">↑≡</button>
+      </div>
       <div class="overflow-y-auto flex-1 p-1.5" id="file-tree">
         <div class="text-[11px] text-white/[0.12] px-2 py-2">Loading…</div>
       </div>
@@ -411,9 +426,9 @@ const ICON_FOLDER = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
 
 // ─── Drawer / nav toggle ──────────────────────────────────────────────────────
 
-let drawerPanel = 'files';
+let drawerPanel = localStorage.getItem('ops-drawer') || 'files'; // null = collapsed
 
-function setDrawer(panel) {
+function setDrawer(panel, save = true) {
   const drawer   = document.getElementById('drawer');
   const navFiles = document.getElementById('nav-files');
   const navSetts = document.getElementById('nav-settings');
@@ -425,6 +440,7 @@ function setDrawer(panel) {
     drawer.classList.add('collapsed');
     navFiles.classList.remove('active');
     navSetts.classList.remove('active');
+    if (save) localStorage.setItem('ops-drawer', '');
     return;
   }
   drawerPanel = panel;
@@ -433,6 +449,14 @@ function setDrawer(panel) {
   pSetts.classList.toggle('active', panel === 'settings');
   navFiles.classList.toggle('active', panel === 'files');
   navSetts.classList.toggle('active', panel === 'settings');
+  if (save) localStorage.setItem('ops-drawer', panel);
+}
+
+// Restore persisted state on load (no save, just apply)
+if (!drawerPanel) {
+  document.getElementById('drawer').classList.add('collapsed');
+} else {
+  setDrawer(drawerPanel, false);
 }
 
 document.getElementById('nav-files').addEventListener('click',    () => setDrawer('files'));
@@ -644,7 +668,7 @@ function buildTreeItem(item, depth) {
     <span class="chevron ${item.isDir ? '' : 'leaf'}">▶</span>
     <span class="icon">${item.isDir ? '▸' : '·'}</span>
     <span class="name">${item.name}</span>
-    ${item.isDir ? `<span class="tree-launch" title="Start Claude session here">▶ claude</span>` : ''}
+    ${item.isDir ? `<span class="tree-launch" title="Start Claude session here">+</span>` : ''}
   `;
 
   if (!item.isDir) return { el: div, children: null };
@@ -691,6 +715,16 @@ async function initFileTree() {
     tree.innerHTML = `<div style="padding:10px 12px;color:rgba(239,68,68,0.5);font-size:10.5px">Failed to load</div>`;
   }
 }
+
+document.getElementById('tree-expand-all').addEventListener('click', () => {
+  document.querySelectorAll('#file-tree .tree-children').forEach(el => el.classList.add('open'));
+  document.querySelectorAll('#file-tree .tree-item.dir').forEach(el => el.classList.add('open'));
+});
+
+document.getElementById('tree-collapse-all').addEventListener('click', () => {
+  document.querySelectorAll('#file-tree .tree-children').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('#file-tree .tree-item.dir').forEach(el => el.classList.remove('open'));
+});
 
 // ─── Context menu ─────────────────────────────────────────────────────────────
 
