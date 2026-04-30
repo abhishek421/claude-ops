@@ -426,7 +426,9 @@ const ICON_FOLDER = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none"
 
 // ─── Drawer / nav toggle ──────────────────────────────────────────────────────
 
-let drawerPanel = localStorage.getItem('ops-drawer') || 'files'; // null = collapsed
+// null = key never set (default open), '' = explicitly collapsed, 'files'/'settings' = panel open
+const _stored = localStorage.getItem('ops-drawer');
+let drawerPanel = _stored === null ? 'files' : _stored;
 
 function setDrawer(panel, save = true) {
   const drawer   = document.getElementById('drawer');
